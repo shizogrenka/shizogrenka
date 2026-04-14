@@ -38,7 +38,7 @@
             font-size: 50px;
         }
         .controls span {
-    font-size: 50px;
+            font-size: 50px;
         }
         .btn {
             background: #edf2f7;
@@ -85,12 +85,11 @@
             transition: transform 0.15s;
             z-index: 10;
         }
-        
         .marker:hover { 
-            transform: translate(-50%, -50%) scale(1.25); background-color: #ad25cf; 
+            transform: translate(-50%, -50%) scale(1.25); 
+            background-color: #ad25cf; 
         }
-        
-          .marker:hover::after {
+        .marker:hover::after {
             content: "";
             position: absolute;
             top: -5px;
@@ -101,7 +100,6 @@
             background-color: rgba(176, 47, 240, 0.4);
             z-index: -1;
         }
-        
         .tooltip {
             position: absolute;
             background: rgba(255, 255, 255, 0.98);
@@ -111,13 +109,13 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.25);
             z-index: 100;
             pointer-events: none;
-            max-width: 500px;
+            max-width: 3574px;
             text-align: left;
             border: 1px solid rgba(255,255,255,0.6);
             opacity: 0;
             transition: opacity 0.25s;
             font-size: 70px;
-            color: rgba(176, 47, 240, 0.4);
+            color: #2d3748;
             line-height: 1.5;
         }
         .tooltip strong {
@@ -129,49 +127,31 @@
             padding-bottom: 10px;
         }
         .tooltip img {
-            max-width: 10000px;
+            max-width: 100%;
             height: auto;
             margin-top: 16px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             display: block;
-            max-height: 10000px;
             object-fit: cover;
+            min-width: 1000px;
+            min-height: 1000px;
         }
-        .tooltip .delete-btn {
-            display: inline-block;
-            margin-top: 16px;
-            padding: 8px 16px;
-            background: #e53e3e;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 70px;
-            transition: background 0.2s;
-        }
-        .tooltip .delete-btn:hover {
-            background: #c53030;
+        .tooltip-description {
+            margin-top: 20px;
+            font-size: 50px;
+            color: #2d3748;
+            line-height: 1.4;
         }
         .status-message {
             margin-left: 15px;
             font-weight: 500;
             color: #4a5568;
-        }
-        .setup-info {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 12px;
-            padding: 12px 20px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            max-width: 1000px;
+            font-size: 50px;
         }
     </style>
 </head>
 <body>
-
 
 <div class="controls">
     <span><kbd>ПРОБЕЛ</kbd> — добавить маркер</span>
@@ -193,9 +173,9 @@
 <script>
     (function(){
         "use strict";
+        
         const BIN_ID = '69dd0e0daaba882197f4cbad';
         const API_KEY = '$2a$10$FI5FcX.eL5HJlINSc/OBlen0fdDqMA0Dx1I1qoYUykSW9ioEErqAK';
-
         const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
         const map = document.getElementById('interactiveMap');
@@ -203,8 +183,6 @@
         const loadBtn = document.getElementById('loadBtn');
         const clearBtn = document.getElementById('clearBtn');
         const statusMsg = document.getElementById('statusMsg');
-        const setupBox = document.getElementById('setupBox');
-        const closeSetupBtn = document.getElementById('closeSetupBtn');
 
         let tooltip = null;
         let activeMarker = null;
@@ -217,25 +195,17 @@
             return el;
         }
 
-        function updateTooltip(content, imageUrl, markerX, markerY, associatedMarker) {
+        function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
             if (!tooltip) tooltip = createTooltip();
             
-            let html = `<strong>${content || 'Без описания'}</strong>`;
+            let html = `<strong>${title || 'Без названия'}</strong>`;
             if (imageUrl && imageUrl.trim() !== '') {
-                html += `<img src="${imageUrl}" alt="Доп. изображение" onerror="this.style.display='none'">`;
+                html += `<img src="${imageUrl}" alt="Изображение" onerror="this.style.display='none'">`;
             }
-            html += `<button class="delete-btn">🗑️ Удалить маркер</button>`;
+            if (description && description.trim() !== '') {
+                html += `<div class="tooltip-description">${description}</div>`;
+            }
             tooltip.innerHTML = html;
-            
-            const deleteBtn = tooltip.querySelector('.delete-btn');
-            deleteBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (associatedMarker) {
-                    associatedMarker.remove();
-                    hideTooltip();
-                    showStatus('🗑️ Маркер удалён локально. Нажмите «Опубликовать», чтобы обновить сервер.', '#e67e22');
-                }
-            });
             
             tooltip.style.opacity = '0';
             tooltip.style.left = markerX + 'px';
@@ -248,18 +218,10 @@
             let offsetX = 22;
             let offsetY = 22;
             
-            if (markerX + offsetX + tooltipRect.width > viewportWidth) {
-                offsetX = -tooltipRect.width - 10;
-            }
-            if (markerX + offsetX < 0) {
-                offsetX = 10;
-            }
-            if (markerY + offsetY + tooltipRect.height > viewportHeight) {
-                offsetY = -tooltipRect.height - 10;
-            }
-            if (markerY + offsetY < 0) {
-                offsetY = 10;
-            }
+            if (markerX + offsetX + tooltipRect.width > viewportWidth) offsetX = -tooltipRect.width - 10;
+            if (markerX + offsetX < 0) offsetX = 10;
+            if (markerY + offsetY + tooltipRect.height > viewportHeight) offsetY = -tooltipRect.height - 10;
+            if (markerY + offsetY < 0) offsetY = 10;
             
             tooltip.style.left = (markerX + offsetX) + 'px';
             tooltip.style.top = (markerY + offsetY) + 'px';
@@ -271,13 +233,14 @@
             activeMarker = null;
         }
 
-        function addMarker(x, y, infoText, imageUrl) {
+        function addMarker(x, y, title, imageUrl, description) {
             const marker = document.createElement('div');
             marker.className = 'marker';
             marker.style.left = x + 'px';
             marker.style.top = y + 'px';
-            marker.dataset.info = infoText || 'Без названия';
+            marker.dataset.title = title || 'Без названия';
             marker.dataset.imageUrl = imageUrl || '';
+            marker.dataset.description = description || '';
             
             marker.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -288,7 +251,14 @@
                 const rect = this.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
-                updateTooltip(this.dataset.info, this.dataset.imageUrl, centerX, centerY, this);
+                updateTooltip(
+                    this.dataset.title, 
+                    this.dataset.imageUrl, 
+                    this.dataset.description,
+                    centerX, 
+                    centerY, 
+                    this
+                );
                 activeMarker = this;
             });
             
@@ -298,7 +268,7 @@
                 if (confirm('Удалить этот маркер?')) {
                     this.remove();
                     hideTooltip();
-                    showStatus(' Маркер удалён', '#e67e22');
+                    showStatus('Маркер удалён', '#e67e22');
                 }
             });
             
@@ -312,10 +282,9 @@
             showStatus('Все маркеры удалены', '#718096');
         }
 
-
         async function publishMarkers() {
-            if (BIN_ID === 'ВАШ_BIN_ID' || API_KEY === 'ВАШ_SECRET_KEY') {
-                alert('Сначала вставьте свой Bin ID и API Key в код (см. инструкцию выше).');
+            if (BIN_ID === 'я менял' || API_KEY === 'я менял') {
+                alert('Вставьте свои Bin ID и API Key в код!');
                 return;
             }
             const markers = map.querySelectorAll('.marker');
@@ -324,8 +293,9 @@
                 data.push({
                     x: parseFloat(m.style.left),
                     y: parseFloat(m.style.top),
-                    info: m.dataset.info,
-                    imageUrl: m.dataset.imageUrl
+                    title: m.dataset.title,
+                    imageUrl: m.dataset.imageUrl,
+                    description: m.dataset.description
                 });
             });
             
@@ -335,13 +305,12 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY,
-                        'X-Bin-Private': 'false'
+                        'X-Master-Key': API_KEY
                     },
                     body: JSON.stringify(data)
                 });
                 if (!response.ok) throw new Error(`Ошибка ${response.status}`);
-                showStatus(`Опубликовано! ${data.length} маркеров доступны`, '#38a169');
+                showStatus(`Опубликовано! ${data.length} маркеров`, '#38a169');
             } catch (err) {
                 console.error(err);
                 showStatus('Ошибка публикации', '#e53e3e');
@@ -349,8 +318,8 @@
         }
 
         async function loadMarkersFromCloud(silent = false) {
-            if (BIN_ID === 'ВАШ_BIN_ID' || API_KEY === 'ВАШ_SECRET_KEY') {
-                if (!silent) showStatus('', '#dd6b20');
+            if (BIN_ID === 'я менял' || API_KEY === 'я менял') {
+                if (!silent) showStatus('Вставьте ключи в код', '#dd6b20');
                 return;
             }
             try {
@@ -364,14 +333,19 @@
                 clearAllMarkers();
                 
                 if (Array.isArray(data)) {
-                    data.forEach(item => addMarker(item.x, item.y, item.info, item.imageUrl));
-                    if (!silent) showStatus(` Загружено ${data.length} маркеров из облака`, '#3182ce');
+                    data.forEach(item => addMarker(
+                        item.x, item.y, 
+                        item.title || item.info, // поддержка старых маркеров с полем 'info'
+                        item.imageUrl, 
+                        item.description || ''
+                    ));
+                    if (!silent) showStatus(`Загружено ${data.length} маркеров`, '#3182ce');
                 } else {
-                    if (!silent) showStatus('В облаке пока нет маркеров', '#718096');
+                    if (!silent) showStatus('В облаке нет маркеров', '#718096');
                 }
             } catch (err) {
                 console.error(err);
-                if (!silent) showStatus('Не удалось загрузить данные из облака', '#e53e3e');
+                if (!silent) showStatus('Не удалось загрузить данные', '#e53e3e');
             }
         }
 
@@ -388,14 +362,18 @@
             lastMouseY = e.clientY - rect.top;
         });
 
+
         document.addEventListener('keydown', e => {
             if (e.code === 'Space' && map.matches(':hover')) {
                 e.preventDefault();
-                const infoText = prompt('Описание', 'Тут вас ебать будут');
-                if (infoText === null) return;
-                const imageUrl = prompt('URL', 'https://via.placeholder.com/200x150/3182ce/ffffff?text=Изображение');
-                addMarker(lastMouseX, lastMouseY, infoText, imageUrl || '');
-                showStatus(`Маркер добавлен`, '#3182ce');
+                const title = prompt('Название точки', 'Тут вас ебать будут');
+                if (title === null) return;
+                const imageUrl = prompt('URL картинки (необязательно)', 'https://via.placeholder.com/200x150/3182ce/ffffff?text=Изображение');
+                const img = (imageUrl === null) ? '' : imageUrl;
+                const description = prompt('Текст описания (необязательно)', '');
+                const desc = (description === null) ? '' : description;
+                addMarker(lastMouseX, lastMouseY, title, img, desc);
+                showStatus('Маркер добавлен', '#3182ce');
             }
             if (e.key === 'Escape') hideTooltip();
         });
@@ -404,19 +382,11 @@
             if (!e.target.classList.contains('marker')) hideTooltip();
         });
 
-
         publishBtn.addEventListener('click', publishMarkers);
         loadBtn.addEventListener('click', () => loadMarkersFromCloud(false));
         clearBtn.addEventListener('click', clearAllMarkers);
 
-
-        window.addEventListener('load', () => {
-            loadMarkersFromCloud(true);
-        });
-
-        if (BIN_ID === 'ВАШ_BIN_ID' || API_KEY === 'ВАШ_SECRET_KEY') {
-            setTimeout(() => showStatus('Вставьте свои ключи в код!', '#e67e22'), 1000);
-        }
+        window.addEventListener('load', () => loadMarkersFromCloud(true));
     })();
 </script>
 </body>
