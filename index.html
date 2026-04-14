@@ -58,10 +58,9 @@
         .btn.clear { background: #e53e3e; border-color: #c53030; color: white; }
         .btn.clear:hover { background: #c53030; }
 
-        .main-area {
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
+        .map-wrapper {
+            position: relative;
+            max-width: 100%;
         }
 
         .map-container {
@@ -119,7 +118,7 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.25);
             z-index: 100;
             pointer-events: none;
-            max-width: 1200px;
+            max-width: min(1200px, calc(100vw - 700px));
             text-align: left;
             border: 1px solid rgba(255,255,255,0.6);
             opacity: 0;
@@ -155,6 +154,9 @@
         }
 
         .notes-panel {
+            position: fixed;
+            right: 20px;
+            top: 200px;
             width: 600px;
             background: white;
             border-radius: 20px;
@@ -164,6 +166,8 @@
             flex-direction: column;
             border: 1px solid #e2e8f0;
             font-size: 40px;
+            z-index: 200;
+            transition: opacity 0.2s;
         }
         .notes-panel.active {
             display: flex;
@@ -217,13 +221,14 @@
     <span class="status-message" id="statusMsg"></span>
 </div>
 
-<div class="main-area">
+<div class="map-wrapper">
     <div class="map-container" id="interactiveMap"></div>
-    <div class="notes-panel" id="notesPanel">
-        <h3>Заметки к точке: <span id="notesTitle">—</span></h3>
-        <textarea class="notes-textarea" id="notesTextarea" placeholder="Введите заметки..."></textarea>
-        <div class="notes-status" id="notesStatus"></div>
-    </div>
+</div>
+
+<div class="notes-panel" id="notesPanel">
+    <h3>Заметки к точке: <span id="notesTitle">—</span></h3>
+    <textarea class="notes-textarea" id="notesTextarea" placeholder="Введите заметки..."></textarea>
+    <div class="notes-status" id="notesStatus"></div>
 </div>
 
 <script>
@@ -250,11 +255,9 @@
         let saveTimeout = null;
         let currentMarkerForNotes = null;
 
-
         let isDragging = false;
         let startScrollX = 0, startScrollY = 0;
         let startMouseX = 0, startMouseY = 0;
-
 
         function createTooltip() {
             const el = document.createElement('div');
@@ -286,10 +289,21 @@
             let offsetX = 22;
             let offsetY = 22;
             
-            if (markerX + offsetX + tooltipRect.width > viewportWidth) offsetX = -tooltipRect.width - 10;
-            if (markerX + offsetX < 0) offsetX = 10;
-            if (markerY + offsetY + tooltipRect.height > viewportHeight) offsetY = -tooltipRect.height - 10;
-            if (markerY + offsetY < 0) offsetY = 10;
+            const notesPanelWidth = notesPanel.classList.contains('active') ? 620 : 0;
+            const rightBoundary = viewportWidth - notesPanelWidth - 20;
+            
+            if (markerX + offsetX + tooltipRect.width > rightBoundary) {
+                offsetX = -tooltipRect.width - 10;
+            }
+            if (markerX + offsetX < 0) {
+                offsetX = 10;
+            }
+            if (markerY + offsetY + tooltipRect.height > viewportHeight) {
+                offsetY = -tooltipRect.height - 10;
+            }
+            if (markerY + offsetY < 0) {
+                offsetY = 10;
+            }
             
             tooltip.style.left = (markerX + offsetX) + 'px';
             tooltip.style.top = (markerY + offsetY) + 'px';
@@ -316,13 +330,10 @@
             if (saveTimeout) clearTimeout(saveTimeout);
         }
 
-
         async function autoSaveNotes(marker, newNotes) {
-
             notesStatus.textContent = 'Сохранение...';
             notesStatus.style.color = '#d69e2e';
             
-
             marker.dataset.notes = newNotes;
             
             if (BIN_ID === 'я менял' || API_KEY === 'я менял') {
@@ -332,7 +343,6 @@
             }
             
             try {
-
                 const markers = map.querySelectorAll('.marker');
                 const data = [];
                 markers.forEach(m => {
@@ -397,7 +407,7 @@
                     activeMarker = null;
                     return; 
                 }
-
+                
                 hideTooltip();
                 
                 const rect = this.getBoundingClientRect();
@@ -413,7 +423,6 @@
                 );
                 
                 openNotesPanel(this);
-                
                 activeMarker = this;
             });
             
@@ -560,7 +569,7 @@
         document.addEventListener('keydown', e => {
             if (e.code === 'Space' && map.matches(':hover')) {
                 e.preventDefault();
-                const title = prompt('Название точки', 'Тут вас насиловать будут');
+                const title = prompt('Название точки', 'Тут дварфы пили пиво');
                 if (title === null) return;
                 const imageUrl = prompt('URL картинки (необязательно)', 'https://via.placeholder.com/200x150/3182ce/ffffff?text=Изображение');
                 const img = (imageUrl === null) ? '' : imageUrl;
