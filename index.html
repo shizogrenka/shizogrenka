@@ -107,13 +107,16 @@
         }
 
         .tooltip {
-            position: absolute;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(8px);
             border-radius: 20px;
             padding: 24px 28px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-            z-index: 100;
+            z-index: 150;
             pointer-events: none;
             text-align: left;
             border: 1px solid rgba(255,255,255,0.6);
@@ -122,6 +125,8 @@
             font-size: 70px;
             color: #2d3748;
             line-height: 1.5;
+            color: #2d3748;
+            
         }
         .tooltip strong {
             display: block;
@@ -253,50 +258,20 @@
             document.body.appendChild(el);
             return el;
         }
-
-        function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
-            if (!tooltip) tooltip = createTooltip();
-            
-            let html = `<strong>${title || 'Без названия'}</strong>`;
-            if (imageUrl && imageUrl.trim() !== '') {
-                html += `<img src="${imageUrl}" alt="Изображение" onerror="this.style.display='none'">`;
-            }
-            if (description && description.trim() !== '') {
-                html += `<div class="tooltip-description">${description}</div>`;
-            }
-            tooltip.innerHTML = html;
-            
-            tooltip.style.opacity = '0';
-            tooltip.style.left = markerX + 'px';
-            tooltip.style.top = markerY + 'px';
-            
-            const tooltipRect = tooltip.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            
-            let offsetX = 22;
-            let offsetY = 22;
-            
-            const notesPanelWidth = notesPanel.classList.contains('active') ? 620 : 0;
-            const rightBoundary = viewportWidth - notesPanelWidth - 20;
-            
-            if (markerX + offsetX + tooltipRect.width > rightBoundary) {
-                offsetX = -tooltipRect.width - 10;
-            }
-            if (markerX + offsetX < 0) {
-                offsetX = 10;
-            }
-            if (markerY + offsetY + tooltipRect.height > viewportHeight) {
-                offsetY = -tooltipRect.height - 10;
-            }
-            if (markerY + offsetY < 0) {
-                offsetY = 10;
-            }
-            
-            tooltip.style.left = (markerX + offsetX) + 'px';
-            tooltip.style.top = (markerY + offsetY) + 'px';
-            tooltip.style.opacity = '1';
-        }
+function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
+    if (!tooltip) tooltip = createTooltip();
+    
+    let html = `<strong>${title || 'Без названия'}</strong>`;
+    if (imageUrl && imageUrl.trim() !== '') {
+        html += `<img src="${imageUrl}" alt="Изображение" onerror="this.style.display='none'">`;
+    }
+    if (description && description.trim() !== '') {
+        html += `<div class="tooltip-description">${description}</div>`;
+    }
+    tooltip.innerHTML = html;
+    
+    tooltip.style.opacity = '1';
+}
 
         function hideTooltip() {
             if (tooltip) tooltip.style.opacity = '0';
