@@ -53,10 +53,7 @@
         .btn:hover { background: #e2e8f0; transform: translateY(-1px); }
         .btn.publish { background: #e67e22; border-color: #d35400; color: white; }
         .btn.publish:hover { background: #d35400; }
-        .btn.load { background: #3182ce; border-color: #2b6cb0; color: white; }
-        .btn.load:hover { background: #2b6cb0; }
-        .btn.clear { background: #e53e3e; border-color: #c53030; color: white; }
-        .btn.clear:hover { background: #c53030; }
+
 
         .map-wrapper {
             position: relative;
@@ -241,8 +238,6 @@
 
         const map = document.getElementById('interactiveMap');
         const publishBtn = document.getElementById('publishBtn');
-        const loadBtn = document.getElementById('loadBtn');
-        const clearBtn = document.getElementById('clearBtn');
         const statusMsg = document.getElementById('statusMsg');
         const notesPanel = document.getElementById('notesPanel');
         const notesTitle = document.getElementById('notesTitle');
@@ -594,8 +589,6 @@
         });
 
         publishBtn.addEventListener('click', publishMarkers);
-        loadBtn.addEventListener('click', () => loadMarkersFromCloud(false));
-        clearBtn.addEventListener('click', clearAllMarkers);
 
         window.addEventListener('load', () => {
             loadMarkersFromCloud(true);
