@@ -53,7 +53,6 @@
         .btn:hover { background: #e2e8f0; transform: translateY(-1px); }
         .btn.publish { background: #e67e22; border-color: #d35400; color: white; }
         .btn.publish:hover { background: #d35400; }
-
         .btn.load {
             background: #3182ce;
             border-color: #2b6cb0;
@@ -126,7 +125,6 @@
             padding: 24px 28px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.25);
             z-index: 150;
-            pointer-events: none;
             text-align: left;
             border: 1px solid rgba(255,255,255,0.6);
             opacity: 0;
@@ -134,7 +132,7 @@
             font-size: 70px;
             color: #2d3748;
             line-height: 1.5;
-
+            pointer-events: none;
         }
         .tooltip strong {
             display: block;
@@ -145,19 +143,48 @@
             padding-bottom: 10px;
         }
         .tooltip img {
-            height: 65vh;
             height: 70vh;
             margin-top: 16px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             display: block;
-
         }
+
         .tooltip-description {
             margin-top: 20px;
             font-size: 50px;
             color: #2d3748;
             line-height: 1.4;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 16px;
+        }
+        .slider-arrow {
+            background: #3182ce;
+            color: white;
+            border: none;
+            font-size: 40px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .slider-arrow:hover {
+            background: #2b6cb0;
+            transform: scale(1.1);
+        }
+        .slider-arrow:active {
+            transform: scale(0.95);
         }
 
         .notes-panel {
@@ -255,6 +282,7 @@
         let lastMouseX = 0, lastMouseY = 0;
         let saveTimeout = null;
         let currentMarkerForNotes = null;
+        let currentImageIndex = 0;
 
         let isDragging = false;
         let startScrollX = 0, startScrollY = 0;
@@ -266,23 +294,66 @@
             document.body.appendChild(el);
             return el;
         }
-function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
-    if (!tooltip) tooltip = createTooltip();
 
-    let html = `<strong>${title || 'Без названия'}</strong>`;
-    if (imageUrl && imageUrl.trim() !== '') {
-        html += `<img src="${imageUrl}" alt="Изображение" onerror="this.style.display='none'">`;
-    }
-    if (description && description.trim() !== '') {
-        html += `<div class="tooltip-description">${description}</div>`;
-    }
-    tooltip.innerHTML = html;
+        function updateTooltip(title, imageUrls, description, markerX, markerY, marker) {
+            if (!tooltip) tooltip = createTooltip();
 
-    tooltip.style.opacity = '1';
-}
+            let html = `<strong>${title || 'Без названия'}</strong>`;
+
+            if (imageUrls && imageUrls.length > 0) {
+                if (imageUrls.length === 1) {
+                    html += `<img src="${imageUrls[0]}" alt="Изображение" onerror="this.style.display='none'">`;
+                } else {
+                    html += `
+                    <div class="slider-container" data-current="0">
+                        <button class="slider-arrow slider-prev">◀</button>
+                        <img src="${imageUrls[0]}" alt="Изображение" class="slider-image" onerror="this.style.display='none'">
+                        <button class="slider-arrow slider-next">▶</button>
+                    </div>`;
+                }
+            }
+
+            if (description && description.trim() !== '') {
+                html += `<div class="tooltip-description">${description}</div>`;
+            }
+
+            tooltip.innerHTML = html;
+            tooltip.style.opacity = '1';
+            tooltip.style.pointerEvents = 'auto';
+
+            const sliderContainer = tooltip.querySelector('.slider-container');
+            if (sliderContainer) {
+                const prevBtn = sliderContainer.querySelector('.slider-prev');
+                const nextBtn = sliderContainer.querySelector('.slider-next');
+                const img = sliderContainer.querySelector('.slider-image');
+                const urls = imageUrls;
+
+                const updateImage = (index) => {
+                    img.src = urls[index];
+                    sliderContainer.dataset.current = index;
+                };
+
+                prevBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let cur = parseInt(sliderContainer.dataset.current, 10);
+                    cur = (cur - 1 + urls.length) % urls.length;
+                    updateImage(cur);
+                });
+
+                nextBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let cur = parseInt(sliderContainer.dataset.current, 10);
+                    cur = (cur + 1) % urls.length;
+                    updateImage(cur);
+                });
+            }
+        }
 
         function hideTooltip() {
-            if (tooltip) tooltip.style.opacity = '0';
+            if (tooltip) {
+                tooltip.style.opacity = '0';
+                tooltip.style.pointerEvents = 'none'; 
+            }
             activeMarker = null;
         }
 
@@ -317,11 +388,15 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
                 const markers = map.querySelectorAll('.marker');
                 const data = [];
                 markers.forEach(m => {
+                    let urls = [];
+                    try {
+                        urls = JSON.parse(m.dataset.imageUrls || '[]');
+                    } catch (e) {}
                     data.push({
                         x: parseFloat(m.style.left),
                         y: parseFloat(m.style.top),
                         title: m.dataset.title,
-                        imageUrl: m.dataset.imageUrl,
+                        imageUrls: urls,
                         description: m.dataset.description,
                         notes: m.dataset.notes || ''
                     });
@@ -359,13 +434,13 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
             }, 1000);
         });
 
-        function addMarker(x, y, title, imageUrl, description, notes = '') {
+        function addMarker(x, y, title, imageUrls, description, notes = '') {
             const marker = document.createElement('div');
             marker.className = 'marker';
             marker.style.left = x + 'px';
             marker.style.top = y + 'px';
             marker.dataset.title = title || 'Без названия';
-            marker.dataset.imageUrl = imageUrl || '';
+            marker.dataset.imageUrls = JSON.stringify(imageUrls || []);
             marker.dataset.description = description || '';
             marker.dataset.notes = notes || '';
 
@@ -381,16 +456,12 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
 
                 hideTooltip();
 
-                const rect = this.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
+                const urls = JSON.parse(this.dataset.imageUrls || '[]');
                 updateTooltip(
                     this.dataset.title, 
-                    this.dataset.imageUrl, 
+                    urls, 
                     this.dataset.description,
-                    centerX, 
-                    centerY, 
-                    this
+                    null, null, this
                 );
 
                 openNotesPanel(this);
@@ -427,11 +498,15 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
             const markers = map.querySelectorAll('.marker');
             const data = [];
             markers.forEach(m => {
+                let urls = [];
+                try {
+                    urls = JSON.parse(m.dataset.imageUrls || '[]');
+                } catch (e) {}
                 data.push({
                     x: parseFloat(m.style.left),
                     y: parseFloat(m.style.top),
                     title: m.dataset.title,
-                    imageUrl: m.dataset.imageUrl,
+                    imageUrls: urls,
                     description: m.dataset.description,
                     notes: m.dataset.notes || ''
                 });
@@ -471,13 +546,21 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
                 clearAllMarkers();
 
                 if (Array.isArray(data)) {
-                    data.forEach(item => addMarker(
-                        item.x, item.y, 
-                        item.title || item.info || 'Без названия',
-                        item.imageUrl, 
-                        item.description || '',
-                        item.notes || ''
-                    ));
+                    data.forEach(item => {
+                        let urls = [];
+                        if (Array.isArray(item.imageUrls)) {
+                            urls = item.imageUrls;
+                        } else if (typeof item.imageUrl === 'string' && item.imageUrl.trim() !== '') {
+                            urls = [item.imageUrl];
+                        }
+                        addMarker(
+                            item.x, item.y, 
+                            item.title || item.info || 'Без названия',
+                            urls,
+                            item.description || '',
+                            item.notes || ''
+                        );
+                    });
                     if (!silent) showStatus(`Загружено ${data.length} маркеров`, '#3182ce');
                 } else {
                     if (!silent) showStatus('В облаке нет маркеров', '#718096');
@@ -496,13 +579,11 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
 
         function startDrag(e) {
             if (e.target.classList.contains('marker')) return;
-
             isDragging = true;
             startScrollX = window.scrollX;
             startScrollY = window.scrollY;
             startMouseX = e.clientX;
             startMouseY = e.clientY;
-
             map.classList.add('dragging');
             e.preventDefault();
         }
@@ -510,10 +591,8 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
         function onDrag(e) {
             if (!isDragging) return;
             e.preventDefault();
-
             const dx = e.clientX - startMouseX;
             const dy = e.clientY - startMouseY;
-
             window.scrollTo(startScrollX - dx, startScrollY - dy);
         }
 
@@ -542,11 +621,23 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
                 e.preventDefault();
                 const title = prompt('Название точки', 'Тут дварфы пили пиво');
                 if (title === null) return;
-                const imageUrl = prompt('URL картинки (необязательно)', 'https://via.placeholder.com/200x150/3182ce/ffffff?text=Изображение');
-                const img = (imageUrl === null) ? '' : imageUrl;
+
+                const imageUrls = [];
+                let imageUrl;
+                do {
+                    imageUrl = prompt('URL картинки (или оставьте пустым, чтобы закончить)', '');
+                    if (imageUrl === null) {
+                        return;
+                    }
+                    if (imageUrl.trim() !== '') {
+                        imageUrls.push(imageUrl.trim());
+                    }
+                } while (imageUrl.trim() !== '');
+
                 const description = prompt('Текст описания (необязательно)', '');
                 const desc = (description === null) ? '' : description;
-                addMarker(lastMouseX, lastMouseY, title, img, desc);
+
+                addMarker(lastMouseX, lastMouseY, title, imageUrls, desc);
                 showStatus('Маркер добавлен', '#3182ce');
             }
             if (e.key === 'Escape') {
@@ -557,6 +648,8 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
         });
 
         map.addEventListener('click', e => {
+            if (e.target.closest('.tooltip')) return;
+
             if (!e.target.classList.contains('marker')) {
                 hideTooltip();
                 closeNotesPanel();
@@ -565,10 +658,9 @@ function updateTooltip(title, imageUrl, description, markerX, markerY, marker) {
         });
 
         publishBtn.addEventListener('click', publishMarkers);
-
         loadBtn.addEventListener('click', () => {
-    loadMarkersFromCloud(false);
-});
+            loadMarkersFromCloud(false);
+        });
         window.addEventListener('load', () => {
             loadMarkersFromCloud(true);
         });
