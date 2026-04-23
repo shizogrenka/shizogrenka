@@ -6,6 +6,7 @@
     <title>Под взором спящих</title>
     <style>
         * { box-sizing: border-box; }
+
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             padding: 20px;
@@ -15,6 +16,7 @@
             align-items: center;
             margin: 0;
         }
+
         .controls {
             background: white;
             padding: 15px 25px;
@@ -29,6 +31,7 @@
             justify-content: center;
             border: 1px solid #e2e8f0;
         }
+
         .controls kbd {
             background: #2d3748;
             color: white;
@@ -37,7 +40,9 @@
             font-family: monospace;
             font-size: 50px;
         }
+
         .controls span { font-size: 50px; }
+
         .btn {
             background: #edf2f7;
             border: none;
@@ -49,7 +54,9 @@
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid #cbd5e0;
+            white-space: nowrap;
         }
+
         .btn:hover { background: #e2e8f0; transform: translateY(-1px); }
         .btn.publish { background: #e67e22; border-color: #d35400; color: white; }
         .btn.publish:hover { background: #d35400; }
@@ -59,8 +66,15 @@
             color: white;
             margin-left: auto;
         }
+
         .btn.load:hover {
             background: #2b6cb0;
+        }
+
+        .btn.active {
+            background: #e2e8f0;
+            border-color: #a0aec0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .map-wrapper {
@@ -81,6 +95,7 @@
             cursor: grab;
             user-select: none;
         }
+
         .map-container.dragging {
             cursor: grabbing;
         }
@@ -98,10 +113,12 @@
             transition: transform 0.15s;
             z-index: 10;
         }
+
         .marker:hover { 
             transform: translate(-50%, -50%) scale(1.25); 
             background-color: #ad25cf; 
         }
+
         .marker:hover::after {
             content: "";
             position: absolute;
@@ -134,6 +151,7 @@
             line-height: 1.5;
             pointer-events: none;
         }
+
         .tooltip strong {
             display: block;
             margin-bottom: 16px;
@@ -142,6 +160,7 @@
             border-bottom: 2px dashed #cbd5e0;
             padding-bottom: 10px;
         }
+
         .tooltip img {
             height: 70vh;
             margin-top: 16px;
@@ -164,6 +183,7 @@
             gap: 15px;
             margin-top: 16px;
         }
+
         .slider-arrow {
             background: #3182ce;
             color: white;
@@ -179,10 +199,12 @@
             transition: 0.2s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
+
         .slider-arrow:hover {
             background: #2b6cb0;
             transform: scale(1.1);
         }
+
         .slider-arrow:active {
             transform: scale(0.95);
         }
@@ -201,16 +223,18 @@
             border: 1px solid #e2e8f0;
             font-size: 40px;
             z-index: 200;
-            transition: opacity 0.2s;
         }
+
         .notes-panel.active {
             display: flex;
         }
+
         .notes-panel h3 {
             margin: 0 0 15px 0;
             font-size: 50px;
             color: #2d3748;
         }
+
         .notes-textarea {
             width: 100%;
             height: 500px;
@@ -221,11 +245,193 @@
             resize: vertical;
             font-family: inherit;
         }
+
         .notes-status {
             margin-top: 10px;
             color: #718096;
             font-size: 40px;
             min-height: 30px;
+        }
+
+        .draw-panel {
+            position: fixed;
+            left: 20px;
+            top: 200px;
+            min-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 25px;
+            display: none;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            font-size: 70px;
+            z-index: 200;
+            gap: 20px;
+        }
+
+        .draw-panel.active {
+            display: flex;
+        }
+
+        .draw-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 70px;
+            color: #2d3748;
+        }
+
+        .draw-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .draw-row label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 70px;
+        }
+
+        .color-preview {
+            width: 200px;
+            height: 200px;
+            border-radius: 15px;
+            border: 3px solid #cbd5e0;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.15s;
+        }
+
+        .color-preview:hover {
+            transform: scale(1.05);
+        }
+
+        .color-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            z-index: 500;
+            display: none;
+            flex-direction: column;
+            gap: 25px;
+            min-width: 800px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .color-dialog.active {
+            display: flex;
+        }
+
+        .color-dialog h3 {
+            margin: 0;
+            font-size: 60px;
+            color: #2d3748;
+            text-align: center;
+        }
+
+        .dialog-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 50px;
+        }
+
+        .dialog-row label {
+            width: 80px;
+            text-align: right;
+        }
+
+        .dialog-row input[type="range"] {
+            flex: 1;
+            height: 50px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .dialog-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3182ce;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            margin-top: -5px;
+        }
+
+        .dialog-row input[type="range"]::-moz-range-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3182ce;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .hex-input {
+            width: 250px;
+            padding: 12px 20px;
+            font-size: 50px;
+            border-radius: 15px;
+            border: 2px solid #cbd5e0;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        .dialog-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .dialog-buttons .btn {
+            font-size: 50px;
+            padding: 12px 30px;
+        }
+
+        .draw-row input[type="range"] {
+            width: 500px;
+            height: 50px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .draw-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3182ce;
+            cursor: pointer;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .draw-row input[type="range"]::-moz-range-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3182ce;
+            cursor: pointer;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .status-message {
@@ -245,8 +451,9 @@
     <span>•</span>
     <span><kbd>Зажать ЛКМ</kbd> — двигать карту</span>
     <span></span>
-    <button class="btn publish" id="publishBtn">Опубликовать для всех</button>
+    <button class="btn publish" id="publishBtn">Сохранить</button>
     <button class="btn load" id="loadBtn">Загрузить</button>
+    <button class="btn" id="drawToggleBtn">Рисование</button>
     <span class="status-message" id="statusMsg"></span>
 </div>
 
@@ -258,6 +465,51 @@
     <h3>Заметки к точке: <span id="notesTitle">—</span></h3>
     <textarea class="notes-textarea" id="notesTextarea" placeholder="Введите заметки..."></textarea>
     <div class="notes-status" id="notesStatus"></div>
+</div>
+
+<div class="draw-panel" id="drawPanel">
+    <h3>Инструменты рисования</h3>
+    <div class="draw-row">
+        <label>Цвет:</label>
+        <div class="color-preview" id="colorPreview" style="background-color: #ff0000;"></div>
+    </div>
+    <div class="draw-row">
+        <label>Размер: <input type="range" id="drawSize" min="1" max="50" value="5"></label>
+    </div>
+    <div class="draw-row">
+        <label>Прозрачность: <input type="range" id="drawOpacity" min="0" max="1" step="0.05" value="1"></label>
+    </div>
+    <div class="draw-row">
+        <button class="btn" id="clearCanvasBtn">Очистить холст</button>
+        <button class="btn publish" id="saveDrawingBtn">Сохранить всё</button>
+    </div>
+</div>
+
+<div class="color-dialog" id="colorDialog">
+    <h3>Выбор цвета</h3>
+    <div class="dialog-row">
+        <label>R</label>
+        <input type="range" id="redSlider" min="0" max="255" value="255">
+        <span id="redValue" style="min-width: 60px;">255</span>
+    </div>
+    <div class="dialog-row">
+        <label>G</label>
+        <input type="range" id="greenSlider" min="0" max="255" value="0">
+        <span id="greenValue" style="min-width: 60px;">0</span>
+    </div>
+    <div class="dialog-row">
+        <label>B</label>
+        <input type="range" id="blueSlider" min="0" max="255" value="0">
+        <span id="blueValue" style="min-width: 60px;">0</span>
+    </div>
+    <div class="dialog-row">
+        <label>HEX</label>
+        <input type="text" class="hex-input" id="hexInput" value="#ff0000" maxlength="7">
+    </div>
+    <div class="dialog-buttons">
+        <button class="btn" id="dialogOk">Применить</button>
+        <button class="btn" id="dialogCancel">Отмена</button>
+    </div>
 </div>
 
 <script>
@@ -276,17 +528,154 @@
         const notesTitle = document.getElementById('notesTitle');
         const notesTextarea = document.getElementById('notesTextarea');
         const notesStatus = document.getElementById('notesStatus');
+        const drawToggleBtn = document.getElementById('drawToggleBtn');
+        const drawPanel = document.getElementById('drawPanel');
+        const drawSizeInput = document.getElementById('drawSize');
+        const drawOpacityInput = document.getElementById('drawOpacity');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+        const saveDrawingBtn = document.getElementById('saveDrawingBtn');
+
+
+        const colorPreview = document.getElementById('colorPreview');
+        const colorDialog = document.getElementById('colorDialog');
+        const redSlider = document.getElementById('redSlider');
+        const greenSlider = document.getElementById('greenSlider');
+        const blueSlider = document.getElementById('blueSlider');
+        const redValue = document.getElementById('redValue');
+        const greenValue = document.getElementById('greenValue');
+        const blueValue = document.getElementById('blueValue');
+        const hexInput = document.getElementById('hexInput');
+        const dialogOk = document.getElementById('dialogOk');
+        const dialogCancel = document.getElementById('dialogCancel');
+
+        let currentColor = '#ff0000';
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 3574;
+        canvas.height = 3064;
+        canvas.style.cssText = 'position:absolute; top:0; left:0; z-index:5; pointer-events:none;';
+        map.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        let isDrawingMode = false;
+        let isPainting = false;
+        let lastPoint = { x: 0, y: 0 };
+
+        const emptyCanvas = document.createElement('canvas');
+        emptyCanvas.width = canvas.width;
+        emptyCanvas.height = canvas.height;
+        const emptyDataURL = emptyCanvas.toDataURL();
 
         let tooltip = null;
         let activeMarker = null;
         let lastMouseX = 0, lastMouseY = 0;
         let saveTimeout = null;
         let currentMarkerForNotes = null;
-        let currentImageIndex = 0;
 
         let isDragging = false;
         let startScrollX = 0, startScrollY = 0;
         let startMouseX = 0, startMouseY = 0;
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function updateColorUIFromRGB(r, g, b) {
+            redSlider.value = r;
+            greenSlider.value = g;
+            blueSlider.value = b;
+            redValue.textContent = r;
+            greenValue.textContent = g;
+            blueValue.textContent = b;
+            const hex = rgbToHex(r, g, b);
+            hexInput.value = hex;
+            colorPreview.style.backgroundColor = hex;
+            currentColor = hex;
+        }
+
+        function updateColorFromHex(hex) {
+            const rgb = hexToRgb(hex);
+            if (rgb) {
+                updateColorUIFromRGB(rgb.r, rgb.g, rgb.b);
+            } else {
+                hexInput.value = currentColor;
+            }
+        }
+
+        function updateColorFromSliders() {
+            const r = parseInt(redSlider.value, 10);
+            const g = parseInt(greenSlider.value, 10);
+            const b = parseInt(blueSlider.value, 10);
+            updateColorUIFromRGB(r, g, b);
+        }
+
+        function openColorDialog() {
+            const rgb = hexToRgb(currentColor);
+            if (rgb) {
+                updateColorUIFromRGB(rgb.r, rgb.g, rgb.b);
+            }
+            colorDialog.classList.add('active');
+        }
+
+        function closeColorDialog(apply = false) {
+            colorDialog.classList.remove('active');
+            if (apply) {
+                const r = parseInt(redSlider.value, 10);
+                const g = parseInt(greenSlider.value, 10);
+                const b = parseInt(blueSlider.value, 10);
+                updateColorUIFromRGB(r, g, b);
+            } else {
+                const rgb = hexToRgb(currentColor);
+                if (rgb) {
+                    updateColorUIFromRGB(rgb.r, rgb.g, rgb.b);
+                }
+            }
+        }
+
+
+        colorPreview.addEventListener('click', openColorDialog);
+
+        redSlider.addEventListener('input', updateColorFromSliders);
+        greenSlider.addEventListener('input', updateColorFromSliders);
+        blueSlider.addEventListener('input', updateColorFromSliders);
+
+        hexInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (/^#[0-9a-fA-F]{0,6}$/.test(val) && val.length === 7) {
+                updateColorFromHex(val);
+            } else if (val.length < 7) {
+
+            } else {
+                this.value = currentColor;
+            }
+        });
+
+        dialogOk.addEventListener('click', () => closeColorDialog(true));
+        dialogCancel.addEventListener('click', () => closeColorDialog(false));
+
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && colorDialog.classList.contains('active')) {
+                closeColorDialog(false);
+                e.stopPropagation();
+            }
+        });
+
+
+        updateColorUIFromRGB(255, 0, 0);
+
 
         function createTooltip() {
             const el = document.createElement('div');
@@ -295,11 +684,9 @@
             return el;
         }
 
-        function updateTooltip(title, imageUrls, description, markerX, markerY, marker) {
+        function updateTooltip(title, imageUrls, description) {
             if (!tooltip) tooltip = createTooltip();
-
             let html = `<strong>${title || 'Без названия'}</strong>`;
-
             if (imageUrls && imageUrls.length > 0) {
                 if (imageUrls.length === 1) {
                     html += `<img src="${imageUrls[0]}" alt="Изображение" onerror="this.style.display='none'">`;
@@ -312,34 +699,28 @@
                     </div>`;
                 }
             }
-
             if (description && description.trim() !== '') {
                 html += `<div class="tooltip-description">${description}</div>`;
             }
-
             tooltip.innerHTML = html;
             tooltip.style.opacity = '1';
             tooltip.style.pointerEvents = 'auto';
-
             const sliderContainer = tooltip.querySelector('.slider-container');
             if (sliderContainer) {
                 const prevBtn = sliderContainer.querySelector('.slider-prev');
                 const nextBtn = sliderContainer.querySelector('.slider-next');
                 const img = sliderContainer.querySelector('.slider-image');
                 const urls = imageUrls;
-
                 const updateImage = (index) => {
                     img.src = urls[index];
                     sliderContainer.dataset.current = index;
                 };
-
                 prevBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     let cur = parseInt(sliderContainer.dataset.current, 10);
                     cur = (cur - 1 + urls.length) % urls.length;
                     updateImage(cur);
                 });
-
                 nextBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     let cur = parseInt(sliderContainer.dataset.current, 10);
@@ -352,7 +733,7 @@
         function hideTooltip() {
             if (tooltip) {
                 tooltip.style.opacity = '0';
-                tooltip.style.pointerEvents = 'none'; 
+                tooltip.style.pointerEvents = 'none';
             }
             activeMarker = null;
         }
@@ -375,42 +756,19 @@
         async function autoSaveNotes(marker, newNotes) {
             notesStatus.textContent = 'Сохранение...';
             notesStatus.style.color = '#d69e2e';
-
             marker.dataset.notes = newNotes;
-
             if (BIN_ID === 'я менял' || API_KEY === 'я менял') {
                 notesStatus.textContent = 'Заметки сохранены локально (нет ключей)';
                 notesStatus.style.color = '#718096';
                 return;
             }
-
             try {
-                const markers = map.querySelectorAll('.marker');
-                const data = [];
-                markers.forEach(m => {
-                    let urls = [];
-                    try {
-                        urls = JSON.parse(m.dataset.imageUrls || '[]');
-                    } catch (e) {}
-                    data.push({
-                        x: parseFloat(m.style.left),
-                        y: parseFloat(m.style.top),
-                        title: m.dataset.title,
-                        imageUrls: urls,
-                        description: m.dataset.description,
-                        notes: m.dataset.notes || ''
-                    });
-                });
-
+                const data = await collectAllData();
                 const response = await fetch(API_URL, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
                     body: JSON.stringify(data)
                 });
-
                 if (!response.ok) throw new Error(`Ошибка ${response.status}`);
                 notesStatus.textContent = 'Сохранено';
                 notesStatus.style.color = '#38a169';
@@ -424,9 +782,7 @@
 
         notesTextarea.addEventListener('input', function() {
             if (!currentMarkerForNotes) return;
-
             const newNotes = this.value;
-
             if (saveTimeout) clearTimeout(saveTimeout);
             saveTimeout = setTimeout(() => {
                 autoSaveNotes(currentMarkerForNotes, newNotes);
@@ -446,24 +802,15 @@
 
             marker.addEventListener('click', function(e) {
                 e.stopPropagation();
-
-                if (activeMarker === this) { 
+                if (activeMarker === this) {
                     hideTooltip();
                     closeNotesPanel();
                     activeMarker = null;
-                    return; 
+                    return;
                 }
-
                 hideTooltip();
-
                 const urls = JSON.parse(this.dataset.imageUrls || '[]');
-                updateTooltip(
-                    this.dataset.title, 
-                    urls, 
-                    this.dataset.description,
-                    null, null, this
-                );
-
+                updateTooltip(this.dataset.title, urls, this.dataset.description);
                 openNotesPanel(this);
                 activeMarker = this;
             });
@@ -487,22 +834,15 @@
             map.querySelectorAll('.marker').forEach(m => m.remove());
             hideTooltip();
             closeNotesPanel();
-            showStatus('Все маркеры удалены', '#718096');
         }
 
-        async function publishMarkers() {
-            if (BIN_ID === 'я менял' || API_KEY === 'я менял') {
-                alert('Вставьте свои Bin ID и API Key в код!');
-                return;
-            }
+        function collectAllData() {
             const markers = map.querySelectorAll('.marker');
-            const data = [];
+            const markersArray = [];
             markers.forEach(m => {
                 let urls = [];
-                try {
-                    urls = JSON.parse(m.dataset.imageUrls || '[]');
-                } catch (e) {}
-                data.push({
+                try { urls = JSON.parse(m.dataset.imageUrls || '[]'); } catch (e) {}
+                markersArray.push({
                     x: parseFloat(m.style.left),
                     y: parseFloat(m.style.top),
                     title: m.dataset.title,
@@ -511,22 +851,33 @@
                     notes: m.dataset.notes || ''
                 });
             });
+            const canvasData = canvas.toDataURL();
+            const isCanvasEmpty = (canvasData === emptyDataURL);
+            const payload = { markers: markersArray };
+            if (!isCanvasEmpty) {
+                payload.canvasData = canvasData;
+            }
+            return payload;
+        }
 
-            showStatus('Публикация...', '#d69e2e');
+        async function publishAll(showMessage = true) {
+            if (BIN_ID === 'я менял' || API_KEY === 'я менял') {
+                if (showMessage) alert('Вставьте свои Bin ID и API Key в код!');
+                return;
+            }
             try {
+                const payload = collectAllData();
+                if (showMessage) showStatus('Публикация...', '#d69e2e');
                 const response = await fetch(API_URL, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
-                    body: JSON.stringify(data)
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(payload)
                 });
                 if (!response.ok) throw new Error(`Ошибка ${response.status}`);
-                showStatus(`Опубликовано! ${data.length} маркеров`, '#38a169');
+                if (showMessage) showStatus(`Опубликовано! Маркеров: ${payload.markers.length}, рисунок ${payload.canvasData ? 'сохранён' : 'не сохранён (пуст)'}`, '#38a169');
             } catch (err) {
                 console.error(err);
-                showStatus('Ошибка публикации', '#e53e3e');
+                if (showMessage) showStatus('Ошибка публикации', '#e53e3e');
             }
         }
 
@@ -541,29 +892,34 @@
                 });
                 if (!response.ok) throw new Error(`Ошибка ${response.status}`);
                 const json = await response.json();
-                const data = json.record;
-
+                const record = json.record;
                 clearAllMarkers();
-
-                if (Array.isArray(data)) {
-                    data.forEach(item => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (Array.isArray(record)) {
+                    record.forEach(item => {
                         let urls = [];
-                        if (Array.isArray(item.imageUrls)) {
-                            urls = item.imageUrls;
-                        } else if (typeof item.imageUrl === 'string' && item.imageUrl.trim() !== '') {
-                            urls = [item.imageUrl];
-                        }
-                        addMarker(
-                            item.x, item.y, 
-                            item.title || item.info || 'Без названия',
-                            urls,
-                            item.description || '',
-                            item.notes || ''
-                        );
+                        if (Array.isArray(item.imageUrls)) urls = item.imageUrls;
+                        else if (typeof item.imageUrl === 'string' && item.imageUrl.trim() !== '') urls = [item.imageUrl];
+                        addMarker(item.x, item.y, item.title || item.info || 'Без названия', urls, item.description || '', item.notes || '');
                     });
-                    if (!silent) showStatus(`Загружено ${data.length} маркеров`, '#3182ce');
+                    if (!silent) showStatus(`Загружено ${record.length} маркеров (старый формат)`, '#3182ce');
+                } else if (record && typeof record === 'object') {
+                    const markers = record.markers || [];
+                    markers.forEach(item => {
+                        let urls = item.imageUrls || [];
+                        addMarker(item.x, item.y, item.title || 'Без названия', urls, item.description || '', item.notes || '');
+                    });
+                    if (record.canvasData && record.canvasData !== emptyDataURL) {
+                        const img = new Image();
+                        img.onload = () => {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0);
+                        };
+                        img.src = record.canvasData;
+                    }
+                    if (!silent) showStatus(`Загружено маркеров: ${markers.length}, рисунок ${record.canvasData ? 'восстановлен' : 'отсутствует'}`, '#3182ce');
                 } else {
-                    if (!silent) showStatus('В облаке нет маркеров', '#718096');
+                    if (!silent) showStatus('В облаке нет данных', '#718096');
                 }
             } catch (err) {
                 console.error(err);
@@ -578,6 +934,7 @@
         }
 
         function startDrag(e) {
+            if (isDrawingMode) return;
             if (e.target.classList.contains('marker')) return;
             isDragging = true;
             startScrollX = window.scrollX;
@@ -609,38 +966,116 @@
             lastMouseY = e.clientY - rect.top;
         }
 
-        map.addEventListener('mousedown', startDrag);
+        function toggleDrawingMode() {
+            isDrawingMode = !isDrawingMode;
+            if (isDrawingMode) {
+                canvas.style.pointerEvents = 'auto';
+                canvas.style.cursor = 'crosshair';
+                drawPanel.classList.add('active');
+                drawToggleBtn.textContent = 'Рисование (выкл)';
+                drawToggleBtn.classList.add('active');
+                stopDrag();
+            } else {
+                canvas.style.pointerEvents = 'none';
+                canvas.style.cursor = '';
+                drawPanel.classList.remove('active');
+                drawToggleBtn.textContent = 'Рисование';
+                drawToggleBtn.classList.remove('active');
+                stopPainting();
+            }
+        }
+
+        function startPaint(e) {
+            if (!isDrawingMode) return;
+            isPainting = true;
+            const rect = canvas.getBoundingClientRect();
+            lastPoint.x = e.clientX - rect.left;
+            lastPoint.y = e.clientY - rect.top;
+            ctx.beginPath();
+            ctx.moveTo(lastPoint.x, lastPoint.y);
+            ctx.lineWidth = parseInt(drawSizeInput.value, 10);
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+            ctx.globalAlpha = parseFloat(drawOpacityInput.value);
+            ctx.lineTo(lastPoint.x, lastPoint.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(lastPoint.x, lastPoint.y);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function paintMove(e) {
+            if (!isDrawingMode || !isPainting) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.lineWidth = parseInt(drawSizeInput.value, 10);
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+            ctx.globalAlpha = parseFloat(drawOpacityInput.value);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            lastPoint.x = x;
+            lastPoint.y = y;
+        }
+
+        function stopPainting() {
+            if (isPainting) {
+                isPainting = false;
+                ctx.beginPath();
+            }
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            showStatus('Холст очищен', '#718096');
+        }
+
+        canvas.addEventListener('mousedown', startPaint);
+        canvas.addEventListener('mouseup', stopPainting);
+        canvas.addEventListener('mouseleave', stopPainting);
+
         window.addEventListener('mousemove', (e) => {
             updateMouseCoords(e);
+            if (isDrawingMode) {
+                paintMove(e);
+                return;
+            }
             onDrag(e);
         });
+
+        map.addEventListener('mousedown', startDrag);
         window.addEventListener('mouseup', stopDrag);
 
         document.addEventListener('keydown', e => {
             if (e.code === 'Space' && map.matches(':hover')) {
                 e.preventDefault();
+                if (isDrawingMode) {
+                    showStatus('Сначала выключите рисование, чтобы добавить маркер', '#dd6b20');
+                    return;
+                }
                 const title = prompt('Название точки', 'Тут дварфы пили пиво');
                 if (title === null) return;
-
                 const imageUrls = [];
                 let imageUrl;
                 do {
                     imageUrl = prompt('URL картинки (или оставьте пустым, чтобы закончить)', '');
-                    if (imageUrl === null) {
-                        return;
-                    }
-                    if (imageUrl.trim() !== '') {
-                        imageUrls.push(imageUrl.trim());
-                    }
+                    if (imageUrl === null) return;
+                    if (imageUrl.trim() !== '') imageUrls.push(imageUrl.trim());
                 } while (imageUrl.trim() !== '');
-
                 const description = prompt('Текст описания (необязательно)', '');
                 const desc = (description === null) ? '' : description;
-
                 addMarker(lastMouseX, lastMouseY, title, imageUrls, desc);
                 showStatus('Маркер добавлен', '#3182ce');
             }
             if (e.key === 'Escape') {
+                if (colorDialog.classList.contains('active')) {
+                    closeColorDialog(false);
+                    return;
+                }
                 hideTooltip();
                 closeNotesPanel();
                 activeMarker = null;
@@ -648,8 +1083,7 @@
         });
 
         map.addEventListener('click', e => {
-            if (e.target.closest('.tooltip')) return;
-
+            if (e.target.closest('.tooltip') || e.target.closest('.color-dialog')) return;
             if (!e.target.classList.contains('marker')) {
                 hideTooltip();
                 closeNotesPanel();
@@ -657,10 +1091,12 @@
             }
         });
 
-        publishBtn.addEventListener('click', publishMarkers);
-        loadBtn.addEventListener('click', () => {
-            loadMarkersFromCloud(false);
-        });
+        drawToggleBtn.addEventListener('click', toggleDrawingMode);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+        saveDrawingBtn.addEventListener('click', () => publishAll(true));
+        publishBtn.addEventListener('click', () => publishAll(true));
+        loadBtn.addEventListener('click', () => loadMarkersFromCloud(false));
+
         window.addEventListener('load', () => {
             loadMarkersFromCloud(true);
         });
